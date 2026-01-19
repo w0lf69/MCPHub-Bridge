@@ -1,0 +1,13 @@
+{
+  "_comment": "Development config - uses local venv and working directory",
+  "mcpServers": {
+    "mcphub": {
+      "command": "C:\\path\\to\\MCPHub-Bridge\\.venv\\Scripts\\python.exe",
+      "args": ["-m", "mcphub_bridge"],
+      "cwd": "C:\\path\\to\\MCPHub-Bridge",
+      "env": {
+        "MCPHUB_API_KEY": "YOUR_API_KEY_HERE"
+      }
+    }
+  }
+}

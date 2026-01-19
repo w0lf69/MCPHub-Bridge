@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "mcphub": {
+      "command": "python",
+      "args": ["-m", "mcphub_bridge"],
+      "env": {
+        "MCPHUB_API_KEY": "YOUR_API_KEY_HERE",
+        "MCPHUB_URL": "https://mcphub.yourdomain.com"
+      }
+    }
+  }
+}

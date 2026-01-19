@@ -1,0 +1,68 @@
+# MCP Hub Bridge Configuration - Admin Example
+# Location: %USERPROFILE%\.mcphub\config.yaml (Windows)
+#           ~/.mcphub/config.yaml (Linux/Mac)
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# AUTHENTICATION: API Key Only (No OIDC)
+# ─────────────────────────────────────────────────────────────────────────────
+# We use API keys (not OIDC) for CLI tools because:
+# - Authelia's client_credentials flow doesn't provide user identity
+# - API keys contain embedded user/group info for RBAC
+# - Simpler setup, no token refresh complexity
+#
+# Your API key contains your identity:
+# - user: "admin"
+# - groups: ["admins", "users"]
+# - hexstrike: true
+# - allowed_mcps: ["*"]
+# ─────────────────────────────────────────────────────────────────────────────
+
+hub:
+  # Your MCP Hub URL
+  url: "https://mcphub.yourdomain.com"
+
+  # Long timeout for HexStrike scans (15 minutes)
+  timeout: 900
+
+  # SSL verification (set false for self-signed certs)
+  verify_ssl: true
+
+# Logging
+logging:
+  file: "~/.mcphub/bridge.log"
+  level: "DEBUG"  # DEBUG for troubleshooting, INFO for production
+
+# Environment variable name for API key
+api_key_env: "MCPHUB_API_KEY"
+
+# =============================================================================
+# SETUP INSTRUCTIONS
+# =============================================================================
+#
+# 1. Get your API key from MCP Hub (stored in config/api_keys.yaml)
+#
+# 2. Set your API key as an environment variable:
+#
+#    Windows (PowerShell - run as admin):
+#    [Environment]::SetEnvironmentVariable("MCPHUB_API_KEY", "YOUR_API_KEY_HERE", "User")
+#
+#    Linux/Mac:
+#    echo 'export MCPHUB_API_KEY="YOUR_API_KEY_HERE"' >> ~/.bashrc
+#
+# 3. Copy this file to ~/.mcphub/config.yaml
+#
+# 4. Update Claude Desktop config:
+#    %APPDATA%\Claude\claude_desktop_config.json
+#
+# 5. Restart Claude Desktop
+#
+# =============================================================================
+#
+# ADMIN PERMISSIONS (embedded in your API key)
+# =============================================================================
+# - All MCPs: allowed_mcps: ["*"]
+# - HexStrike access: hexstrike: true
+# - Full policy management via dashboard
+# - Can view security audit logs
+#
+# =============================================================================

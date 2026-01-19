@@ -1,0 +1,23 @@
+[project]
+name = "mcphub-bridge"
+version = "0.1.0"
+description = "Local bridge for Claude Desktop to MCP Hub - handles stdio to HTTPS translation with auth"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [
+    {name = "w0lf69"}
+]
+keywords = ["mcp", "claude", "bridge", "auth"]
+
+dependencies = [
+    "httpx>=0.26.0",
+    "pyyaml>=6.0.0",
+]
+
+[project.scripts]
+mcphub-bridge = "mcphub_bridge:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

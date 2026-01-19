@@ -1,0 +1,73 @@
+# MCP Hub Bridge Configuration - Standard User Example
+# Location: %USERPROFILE%\.mcphub\config.yaml (Windows)
+#           ~/.mcphub/config.yaml (Linux/Mac)
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# AUTHENTICATION: API Key Only (No OIDC)
+# ─────────────────────────────────────────────────────────────────────────────
+# We use API keys (not OIDC) for CLI tools because:
+# - Authelia's client_credentials flow doesn't provide user identity
+# - API keys contain embedded user/group info for RBAC
+# - Simpler setup, no token refresh complexity
+#
+# Your API key contains your identity:
+# - user: "jane"
+# - groups: ["users"]
+# - hexstrike: false
+# - allowed_mcps: ["mealie", "forged", "home-assistant"]
+# ─────────────────────────────────────────────────────────────────────────────
+
+hub:
+  # Your MCP Hub URL
+  url: "https://mcphub.yourdomain.com"
+
+  # Standard timeout (no long scans for regular users)
+  timeout: 300  # 5 minutes
+
+  # SSL verification (set false for self-signed certs)
+  verify_ssl: true
+
+# Logging
+logging:
+  file: "~/.mcphub/bridge.log"
+  level: "INFO"
+
+# Environment variable name for API key
+api_key_env: "MCPHUB_API_KEY"
+
+# =============================================================================
+# SETUP INSTRUCTIONS
+# =============================================================================
+#
+# 1. Get your API key from your admin
+#
+# 2. Set your API key as an environment variable:
+#
+#    Windows (PowerShell - run as admin):
+#    [Environment]::SetEnvironmentVariable("MCPHUB_API_KEY", "YOUR_API_KEY_HERE", "User")
+#
+#    Linux/Mac:
+#    echo 'export MCPHUB_API_KEY="YOUR_API_KEY_HERE"' >> ~/.bashrc
+#
+# 3. Copy this file to ~/.mcphub/config.yaml
+#
+# 4. Update Claude Desktop config:
+#    %APPDATA%\Claude\claude_desktop_config.json
+#
+# 5. Restart Claude Desktop
+#
+# =============================================================================
+#
+# YOUR PERMISSIONS (embedded in your API key)
+# =============================================================================
+# You have access to:
+#   - mealie (recipes and meal planning)
+#   - forged (D&D characters)
+#   - home-assistant (smart home)
+#
+# You do NOT have access to:
+#   - hexstrike (security scanning) - Admin only
+#   - Policy management - Admin only
+#   - Security audit logs - Admin only
+#
+# =============================================================================
