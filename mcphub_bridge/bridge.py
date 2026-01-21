@@ -52,6 +52,22 @@ def setup_logging(config: BridgeConfig):
 logger = logging.getLogger("mcphub.bridge")
 
 
+def sanitize_stdio_input(raw: str) -> str:
+    """Normalize Windows stdio encoding to clean UTF-8.
+
+    Windows stdio can produce UTF-16 surrogate characters (like \\udc90)
+    that are invalid in UTF-8. This sanitizes input ONCE at the boundary
+    so all downstream JSON operations work cleanly.
+
+    Args:
+        raw: Raw string from stdio (may contain surrogates)
+
+    Returns:
+        Clean UTF-8 string with surrogates replaced
+    """
+    return raw.encode("utf-8", errors="surrogatepass").decode("utf-8", errors="replace")
+
+
 class MCPHubBridge:
     """
     Stdio to HTTPS bridge for MCP Hub.
@@ -239,11 +255,14 @@ class MCPHubBridge:
         Process a single line of JSON-RPC input.
 
         Args:
-            line: JSON string
+            line: JSON string (may contain Windows surrogate characters)
 
         Returns:
             JSON response string, or None for notifications
         """
+        # Sanitize at the boundary - ONCE
+        line = sanitize_stdio_input(line)
+
         try:
             data = json.loads(line)
         except json.JSONDecodeError as e:
