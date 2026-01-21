@@ -384,7 +384,7 @@ class MCPHubBridge:
                 response = await self.process_line(line)
 
                 if response:
-                    print(response, flush=True)
+                    print(sanitize_stdio_input(response), flush=True)
                     logger.debug(f"Sent: {response[:100]}...")
 
         except asyncio.CancelledError:
