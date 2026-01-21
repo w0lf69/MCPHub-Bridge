@@ -52,6 +52,45 @@ def setup_logging(config: BridgeConfig):
 logger = logging.getLogger("mcphub.bridge")
 
 
+def sanitize_string(s: str) -> str:
+    """Sanitize a single string by removing surrogate characters.
+
+    Args:
+        s: String that may contain UTF-16 surrogates
+
+    Returns:
+        Clean UTF-8 string with surrogates replaced by U+FFFD
+    """
+    return s.encode("utf-8", errors="surrogatepass").decode("utf-8", errors="replace")
+
+
+def sanitize_dict(obj):
+    """Recursively sanitize all strings in a dict/list structure.
+
+    Windows stdio can produce UTF-16 surrogate characters (like \\udc90)
+    that are invalid in UTF-8. JSON-escaped surrogates like \\udc90 get
+    decoded into actual surrogate codepoints by json.loads(), which then
+    fail when httpx tries to re-encode for HTTP.
+
+    This recursively sanitizes all string values so the dict can be
+    safely serialized to JSON for HTTP requests.
+
+    Args:
+        obj: Dict, list, or primitive value
+
+    Returns:
+        Sanitized copy with all strings cleaned
+    """
+    if isinstance(obj, str):
+        return sanitize_string(obj)
+    elif isinstance(obj, dict):
+        return {k: sanitize_dict(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [sanitize_dict(item) for item in obj]
+    else:
+        return obj
+
+
 def sanitize_stdio_input(raw: str) -> str:
     """Normalize Windows stdio encoding to clean UTF-8.
 
@@ -65,7 +104,7 @@ def sanitize_stdio_input(raw: str) -> str:
     Returns:
         Clean UTF-8 string with surrogates replaced
     """
-    return raw.encode("utf-8", errors="surrogatepass").decode("utf-8", errors="replace")
+    return sanitize_string(raw)
 
 
 class MCPHubBridge:
@@ -122,10 +161,14 @@ class MCPHubBridge:
         # Get auth headers (includes API key and Bearer token if OIDC enabled)
         headers = self.auth.get_headers()
 
+        # Sanitize request to remove any surrogate characters that would
+        # cause httpx to fail when encoding to UTF-8 JSON
+        clean_request = sanitize_dict(request)
+
         try:
             response = await self.http.post(
                 "/route",  # MCP Hub's routing endpoint
-                json=request,
+                json=clean_request,
                 headers=headers
             )
 
