@@ -39,13 +39,19 @@ def setup_logging(config: BridgeConfig):
     if not log_file:
         log_file = str(Path.home() / ".mcphub" / "bridge.log")
 
-    # Ensure directory exists
-    Path(log_file).parent.mkdir(parents=True, exist_ok=True)
+    # Expand ~ if present — yaml configs commonly use it as a portable
+    # home-dir placeholder, and Path() does not expand it automatically.
+    # Without this, mkdir tries to create a directory literally named "~"
+    # and crashes on Windows with "Access is denied" before any logging
+    # can initialize, which makes Claude Desktop's MCP launcher show a
+    # silent disconnect with no diagnostic surface.
+    log_path = Path(log_file).expanduser()
+    log_path.parent.mkdir(parents=True, exist_ok=True)
 
     logging.basicConfig(
         level=getattr(logging, config.log_level.upper(), logging.INFO),
         format="%(asctime)s [%(levelname)s] %(message)s",
-        handlers=[logging.FileHandler(log_file)]
+        handlers=[logging.FileHandler(str(log_path))]
     )
 
 
