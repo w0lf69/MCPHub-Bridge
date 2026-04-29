@@ -426,6 +426,28 @@ async def async_main():
 
 def main():
     """Sync entry point."""
+    # Force UTF-8 on stdin/stdout regardless of the host's locale codepage.
+    #
+    # On Windows, sys.stdin.encoding defaults to the active ANSI codepage
+    # (cp1252 in en-US locales). Claude Desktop pipes UTF-8 JSON-RPC bytes
+    # to us; without this reconfigure, Python's stdin layer would decode
+    # those bytes as cp1252 — turning the UTF-8 bytes for "š" (c5 a1) into
+    # the two characters "Å¡", which httpx then re-encodes as UTF-8
+    # (c3 85 c2 a1) on the wire. MCPHub stores the doubly-encoded bytes
+    # faithfully and every reader sees mojibake forever.
+    #
+    # Diagnosed 2026-04-29 from raw byte inspection of the wolf-intelligence
+    # corpus: 94 facts written through this bridge carried the cp1252
+    # double-encoding fingerprint. The corpus was repaired in a separate
+    # sweep (wolf-intelligence/scripts/repair_mojibake.py); these two
+    # lines stop the leak at the source.
+    #
+    # `errors='surrogateescape'` preserves any genuinely-unmappable bytes
+    # through the pipeline so the existing sanitize_dict() downstream can
+    # still scrub them, instead of raising at the boundary.
+    sys.stdin.reconfigure(encoding="utf-8", errors="surrogateescape")  # type: ignore[attr-defined]
+    sys.stdout.reconfigure(encoding="utf-8", errors="surrogateescape")  # type: ignore[attr-defined]
+
     asyncio.run(async_main())
 
 
